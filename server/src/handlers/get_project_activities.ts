@@ -1,8 +1,19 @@
 
+import { db } from '../db';
+import { activitiesTable } from '../db/schema';
 import { type GetProjectActivitiesInput, type Activity } from '../schema';
+import { eq } from 'drizzle-orm';
 
 export const getProjectActivities = async (input: GetProjectActivitiesInput): Promise<Activity[]> => {
-  // This is a placeholder declaration! Real code should be implemented here.
-  // The goal of this handler is fetching all activities for a specific project from the database.
-  return [];
+  try {
+    const results = await db.select()
+      .from(activitiesTable)
+      .where(eq(activitiesTable.project_id, input.project_id))
+      .execute();
+
+    return results;
+  } catch (error) {
+    console.error('Failed to fetch project activities:', error);
+    throw error;
+  }
 };

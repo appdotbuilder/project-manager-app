@@ -1,13 +1,22 @@
 
+import { db } from '../db';
+import { usersTable } from '../db/schema';
 import { type CreateUserInput, type User } from '../schema';
 
 export const createUser = async (input: CreateUserInput): Promise<User> => {
-  // This is a placeholder declaration! Real code should be implemented here.
-  // The goal of this handler is creating a new user and persisting it in the database.
-  return Promise.resolve({
-    id: 0, // Placeholder ID
-    name: input.name,
-    email: input.email,
-    created_at: new Date()
-  } as User);
+  try {
+    // Insert user record
+    const result = await db.insert(usersTable)
+      .values({
+        name: input.name,
+        email: input.email
+      })
+      .returning()
+      .execute();
+
+    return result[0];
+  } catch (error) {
+    console.error('User creation failed:', error);
+    throw error;
+  }
 };

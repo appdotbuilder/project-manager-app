@@ -1,14 +1,38 @@
 
+import { db } from '../db';
+import { projectsTable } from '../db/schema';
 import { type UpdateProjectInput, type Project } from '../schema';
+import { eq } from 'drizzle-orm';
 
 export const updateProject = async (input: UpdateProjectInput): Promise<Project> => {
-  // This is a placeholder declaration! Real code should be implemented here.
-  // The goal of this handler is updating an existing project in the database.
-  return Promise.resolve({
-    id: input.id,
-    name: 'Updated Project', // Placeholder
-    description: input.description || null,
-    created_at: new Date(),
-    updated_at: new Date()
-  } as Project);
+  try {
+    // Build update object with only provided fields
+    const updateData: any = {
+      updated_at: new Date()
+    };
+
+    if (input.name !== undefined) {
+      updateData.name = input.name;
+    }
+
+    if (input.description !== undefined) {
+      updateData.description = input.description;
+    }
+
+    // Update project record
+    const result = await db.update(projectsTable)
+      .set(updateData)
+      .where(eq(projectsTable.id, input.id))
+      .returning()
+      .execute();
+
+    if (result.length === 0) {
+      throw new Error(`Project with ID ${input.id} not found`);
+    }
+
+    return result[0];
+  } catch (error) {
+    console.error('Project update failed:', error);
+    throw error;
+  }
 };
